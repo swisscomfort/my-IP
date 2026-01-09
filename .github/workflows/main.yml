@@ -1,0 +1,40 @@
+name: Build my-IP Dashboard
+
+on:
+  push:
+      branches: [ main ]
+
+      jobs:
+        build:
+            runs-on: ubuntu-latest
+                strategy:
+                      matrix:
+                              node-version: [18.x, 20.x]
+
+                                      steps:
+                                            - uses: actions/checkout@v4
+
+                                                        - uses: actions/setup-node@v4
+                                                                with:
+                                                                          node-version: ${{ matrix.node-version }}
+                                                                                    cache: 'npm'
+
+                                                                                                - run: npm ci
+                                                                                                      - run: npm run build
+                                                                                                            
+                                                                                                                  - name: Check build integrity
+                                                                                                                          run: |
+                                                                                                                                    if [ ! -d "dist" ]; then
+                                                                                                                                                echo "ERROR: dist directory not found after build"
+                                                                                                                                                            exit 1
+                                                                                                                                                                      fi
+                                                                                                                                                                                if [ ! -f "dist/index.html" ]; then
+                                                                                                                                                                                            echo "ERROR: index.html missing"
+                                                                                                                                                                                                        exit 1
+                                                                                                                                                                                                                  fi
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                              - uses: actions/upload-artifact@v3
+                                                                                                                                                                                                                                      with:
+                                                                                                                                                                                                                                                name: my-ip-dist-node${{ matrix.node-version }}
+                                                                                                                                                                                                                                                          path: dist/
+                                                                                                                                                                                                                                                                    retention-days: 30
